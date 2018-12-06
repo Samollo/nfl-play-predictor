@@ -4,7 +4,7 @@ import random
 # def extract_features():
 
 labelsXArray = ['Drive', 'down', 'TimeSecs', 'PlayTimeDiff', 'yrdline100', 'ydstogo', 'FirstDown', 'posteam',
-                'DefensiveTeam', 'PlayType', 'PassAttempt', 'PassLocation', 'RushAttempt', 'HomeTeam', 'AwayTeam']
+                'PlayType', 'PassAttempt', 'PassLocation', 'RushAttempt', 'HomeTeam', 'AwayTeam']
 
 labelsYArray = ['Yards.Gained', 'Touchdown', 'Safety', 'PassOutcome', 'PassLength', 'AirYards', 'YardsAfterCatch',
                 'InterceptionThrown', 'Reception']
@@ -12,6 +12,15 @@ labelsYArray = ['Yards.Gained', 'Touchdown', 'Safety', 'PassOutcome', 'PassLengt
 labels = {}
 labelsX = {}
 labelsY = {}
+
+'''
+def convert_data(line, type):
+    if type == 'X':
+        for i in range(len(labelsXArray)):
+            if i == 7 && 
+
+
+'''
 
 
 def split_lines(input_file, seed, output1, output2):
@@ -33,10 +42,10 @@ def split_lines(input_file, seed, output1, output2):
             yi = 0
             for label in line.split(','):
                 if label in labelsXArray:
-                    labelsX[xi] = label
+                    labelsX[label] = xi
                     xi += 1
                 if label in labelsYArray:
-                    labelsY[yi] = label
+                    labelsY[label] = yi
                     yi += 1
                 labels[i] = label
                 i += 1
@@ -68,11 +77,27 @@ def read_data(filename):
         i = 0
 
         for element in play.split(','):
-            if labels[i] in labelsX.values():
+
+            if labels[i] in labelsX:
                 lineX.append(element)
-            if labels[i] in labelsY.values():
+            if labels[i] in labelsY:
                 lineY.append(element)
+
             i += 1
+
+        if 'NA' in lineX or 'NA' in lineY:
+            continue
+
+        if lineX[labelsX['PlayType']] != 'Pass' and lineX[labelsX['PlayType']] != 'Run':
+            continue
+
+        if lineX[labelsX['posteam']] == lineX[labelsX['HomeTeam']]:
+            lineX[labelsX['posteam']] = 0
+        else:
+            lineX[labelsX['posteam']] = 1
+
+        lineX[labelsX['HomeTeam']] = 0
+        lineX[labelsX['AwayTeam']] = 1
 
         X.append(lineX)
         Y.append(lineY)
