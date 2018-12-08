@@ -1,13 +1,14 @@
 #!/usr/bin/env python2.7
 import random
+import numpy
+from sklearn.linear_model import LogisticRegression
 
 # def extract_features():
 
 labelsXArray = ['Drive', 'down', 'TimeSecs', 'PlayTimeDiff', 'yrdline100', 'ydstogo', 'FirstDown', 'posteam',
-                'PlayType', 'PassAttempt', 'PassLocation', 'RushAttempt', 'HomeTeam', 'AwayTeam']
+                'PlayType', 'PassAttempt', 'RushAttempt', 'HomeTeam']
 
-labelsYArray = ['Yards.Gained', 'Touchdown', 'Safety', 'PassOutcome', 'PassLength', 'AirYards', 'YardsAfterCatch',
-                'InterceptionThrown', 'Reception']
+labelsYArray = ['Yards.Gained', 'Touchdown', 'Safety', 'InterceptionThrown', 'Reception']
 
 labels = {}
 labelsX = {}
