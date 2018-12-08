@@ -141,6 +141,9 @@ if __name__ == '__main__':
     print labelsX
     print 'labelsY'
     print labelsY
-    X, Y = read_data('train')
-    print X[:10]
-    print Y[:10]
+    Xtrain, Ytrain = read_data('train')
+    Xtest, Ytest = read_data('test')
+    model = LogisticRegression()
+    model.fit(Xtrain, Ytrain)
+    predictions = model.predict(Xtest)
+    print predictions
