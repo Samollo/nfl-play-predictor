@@ -136,9 +136,10 @@ def checkNA(X, Y):
 
 
 if __name__ == '__main__':
-    split_lines('/Users/mohammed/Downloads/dataset.csv', 2, 'train', 'test')
-    print labels
+    split_lines('dataset.csv', 2, 'train', 'test')
+    print 'labelsX'
     print labelsX
+    print 'labelsY'
     print labelsY
     X, Y = read_data('train')
     print X[:10]
