@@ -86,22 +86,34 @@ def read_data(filename):
 
             i += 1
 
-        if 'NA' in lineX or 'NA' in lineY:
-            continue
-
         if lineX[labelsX['PlayType']] != 'Pass' and lineX[labelsX['PlayType']] != 'Run':
             continue
+        if lineX[labelsX['PlayType']] == 'Pass':
+            lineX[labelsX['PlayType']] = float(-1)
+        if lineX[labelsX['PlayType']] == 'Run':
+            lineX[labelsX['PlayType']] = float(1)
 
         if lineX[labelsX['posteam']] == lineX[labelsX['HomeTeam']]:
-            lineX[labelsX['posteam']] = 0
+            lineX[labelsX['posteam']] = float(1)
         else:
-            lineX[labelsX['posteam']] = 1
+            lineX[labelsX['posteam']] = float(-1)
+        lineX[labelsX['HomeTeam']] = float(1)
+        if 'NA' in (lineX or lineY):
+            continue
 
-        lineX[labelsX['HomeTeam']] = 0
-        lineX[labelsX['AwayTeam']] = 1
+        t = numpy.array(lineX)
+        X.append(t.astype(numpy.float))
 
-        X.append(lineX)
-        Y.append(lineY)
+
+        yrdstogo = int(lineX[labelsX['ydstogo']])
+        attempts = 1
+        if float(lineX[labelsX['down']]) < 4:
+            attempts = 4 - float(lineX[labelsX['down']])
+        gain = float(lineY[labelsY['Yards.Gained']])
+        if gain > yrdstogo / attempts:
+            Y.append(1)
+        else:
+            Y.append(0)
 
     return X, Y
 
