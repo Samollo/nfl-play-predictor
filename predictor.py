@@ -105,7 +105,7 @@ def read_data(filename):
         X.append(t.astype(numpy.float))
 
 
-        yrdstogo = int(lineX[labelsX['ydstogo']])
+        yrdstogo = float(lineX[labelsX['ydstogo']])
         attempts = 1
         if float(lineX[labelsX['down']]) < 4:
             attempts = 4 - float(lineX[labelsX['down']])
@@ -116,6 +116,34 @@ def read_data(filename):
             Y.append(0)
 
     return X, Y
+
+def productivity_eval(train_x, train_y, test_x, test_y):
+    model = LogisticRegression()
+    model.fit(train_x, train_y)
+    isProd = 0.
+    totalProd = 0.
+    trueProd = 0.
+
+    predictions = model.predict(test_x)
+
+    for idx in range(len(predictions)):
+        if predictions[idx] == 0 and test_y[idx] == 0:
+            continue
+        if predictions[idx] == 0 and test_y[idx] == 1:
+            totalProd += 1.
+            continue
+        if predictions[idx] == 1 and test_y[idx] == 0:
+            isProd += 1.
+            totalProd += 1.
+            continue
+        if predictions[idx] == 1 and test_y[idx] == 1:
+            trueProd += 1.
+            isProd += 1.
+            totalProd += 1.
+
+    recall = isProd / totalProd
+    precision = trueProd / isProd
+    return recall, precision
 
 
 
@@ -143,7 +171,4 @@ if __name__ == '__main__':
     print labelsY
     Xtrain, Ytrain = read_data('train')
     Xtest, Ytest = read_data('test')
-    model = LogisticRegression()
-    model.fit(Xtrain, Ytrain)
-    predictions = model.predict(Xtest)
-    print predictions
+    print productivity_eval(Xtrain, Ytrain, Xtest, Ytest)
