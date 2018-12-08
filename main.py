@@ -118,6 +118,23 @@ def read_data(filename):
     return X, Y
 
 
+
+def checkNA(X, Y):
+    for v in range(len(X)):
+        for value in range(len(X[v])):
+            if X[v][value] == 'NA':
+                print value
+                print X[v][8]
+                print v
+                return False
+    for vector in Y:
+        for value in range(len(vector)):
+            if vector[value] == 'NA':
+                print value
+                return False
+    return True
+
+
 if __name__ == '__main__':
     split_lines('/Users/mohammed/Downloads/dataset.csv', 2, 'train', 'test')
     print labels
