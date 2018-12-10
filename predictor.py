@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 import random
 import numpy
 from sklearn.linear_model import LogisticRegression
@@ -14,15 +13,6 @@ labels = {}
 labelsX = {}
 labelsY = {}
 
-'''
-def convert_data(line, type):
-    if type == 'X':
-        for i in range(len(labelsXArray)):
-            if i == 7 && 
-
-
-'''
-
 
 def split_lines(input_file, seed, output1, output2):
     random.seed(seed)
@@ -34,6 +24,7 @@ def split_lines(input_file, seed, output1, output2):
     out2 = []
 
     first_line = True
+    corrupted = 0
 
     for line in open(input_file, 'r').readlines():
         if first_line:
@@ -53,6 +44,7 @@ def split_lines(input_file, seed, output1, output2):
             continue
 
         if len(line.split(',')) != 102:
+            corrupted += 1
             continue
 
         if random.random() > 0.5:
@@ -66,11 +58,15 @@ def split_lines(input_file, seed, output1, output2):
         f2.write(j)
     f1.close()
     f2.close()
+    print 'corrupted line '
+    print corrupted
 
 
 def read_data(filename):
     X = []
     Y = []
+
+    post_processed = 0
 
     for play in open(filename, 'r').readlines():
         lineX = []
@@ -87,6 +83,7 @@ def read_data(filename):
             i += 1
 
         if lineX[labelsX['PlayType']] != 'Pass' and lineX[labelsX['PlayType']] != 'Run':
+            post_processed += 1
             continue
         if lineX[labelsX['PlayType']] == 'Pass':
             lineX[labelsX['PlayType']] = float(-1)
@@ -99,11 +96,11 @@ def read_data(filename):
             lineX[labelsX['posteam']] = float(-1)
         lineX[labelsX['HomeTeam']] = float(1)
         if 'NA' in (lineX or lineY):
+            post_processed += 1
             continue
 
         t = numpy.array(lineX)
         X.append(t.astype(numpy.float))
-
 
         yrdstogo = float(lineX[labelsX['ydstogo']])
         attempts = 1
@@ -115,7 +112,11 @@ def read_data(filename):
         else:
             Y.append(0)
 
+    print 'post processed line:'
+    print post_processed
+
     return X, Y
+
 
 def productivity_eval(train_x, train_y, test_x, test_y):
     model = LogisticRegression()
@@ -146,7 +147,6 @@ def productivity_eval(train_x, train_y, test_x, test_y):
     return recall, precision
 
 
-
 def checkNA(X, Y):
     for v in range(len(X)):
         for value in range(len(X[v])):
@@ -165,10 +165,6 @@ def checkNA(X, Y):
 
 if __name__ == '__main__':
     split_lines('dataset.csv', 2, 'train', 'test')
-    print 'labelsX'
-    print labelsX
-    print 'labelsY'
-    print labelsY
     Xtrain, Ytrain = read_data('train')
     Xtest, Ytest = read_data('test')
     print productivity_eval(Xtrain, Ytrain, Xtest, Ytest)
