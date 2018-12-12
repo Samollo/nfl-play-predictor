@@ -364,8 +364,12 @@ if __name__ == '__main__':
     Xtrain, Ytrain = read_data_knn('train')
     Xtest, Ytest = read_data_knn('test')
 
-    j = 1000
+    j = 500
+    k = 10
 
-    k = find_best_k(Xtrain[:j], Ytrain[:j], distant_with_weight, w)
-    print eval_produtivity(Xtrain[:j], Ytrain[:j], Xtest[:100], Ytest[:100], is_productive,
-                           distant_with_weight, k)
+    k_value = sampled_range(1, len(Xtrain) / 10, 20)
+
+#    k = find_best_k(Xtrain[:j], Ytrain[:j], distant_with_weight, w)
+    for val in k_value:
+        print eval_produtivity(Xtrain, Ytrain, Xtest[:100], Ytest[:100], is_productive,
+                           distant_with_weight, val)
