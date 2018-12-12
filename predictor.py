@@ -200,7 +200,7 @@ def productivity_eval(train_x, train_y, test_x, test_y):
 
     recall = isProd / totalProd
     precision = trueProd / isProd
-    return recall, precision
+    return recall, precision, model.coef_[0]
 
 
 def checkNA(X, Y):
@@ -230,6 +230,17 @@ def simple_distance(data1, data2):
     return math.sqrt(value)
 
 
+def distant_with_weight(data1, data2, weight):
+    if len(data1) != len(data2):
+        return
+
+    value = 0
+    for i in range(len(data1)):
+        value += math.pow((data1[i] - data2[i]) * weight[i], 2)
+
+    return math.sqrt(value)
+
+
 def sampled_range(mini, maxi, num):
     if not num:
         return []
@@ -241,7 +252,7 @@ def sampled_range(mini, maxi, num):
     return out
 
 
-def k_nearest_neighbors(x, points, dist_function, k):
+def k_nearest_neighbors(x, points, dist_function, w, k):
     distance = {}
     result = []
 
@@ -249,7 +260,7 @@ def k_nearest_neighbors(x, points, dist_function, k):
         if len(points[point]) != len(x):
             return []
         else:
-            distance[point] = dist_function(x, points[point])
+            distance[point] = dist_function(x, points[point], w)
 
     for key, value in sorted(distance.iteritems(), key=lambda (ky, vl): (vl, ky))[:k]:
         result.append(key)
@@ -257,7 +268,7 @@ def k_nearest_neighbors(x, points, dist_function, k):
     return result
 
 
-def find_best_k(train_x, train_y, dist_function):
+def find_best_k(train_x, train_y, dist_function, w):
     value = {}
     k_value = sampled_range(1, len(train_x) / 10, 20)
 
@@ -270,12 +281,12 @@ def find_best_k(train_x, train_y, dist_function):
                 value[k_value[i]] += eval_produtivity_classifier(numpy.asfarray(X_train), y_train,
                                                                  numpy.asfarray(X_test), y_test,
                                                                  is_productive,
-                                                                 dist_function, k_value[i])
+                                                                 dist_function, w, k_value[i])
             else:
                 value[k_value[i]] = eval_produtivity_classifier(numpy.asfarray(X_train), y_train,
                                                                 numpy.asfarray(X_test), y_test,
                                                                 is_productive,
-                                                                dist_function, k_value[i])
+                                                                dist_function, w, k_value[i])
     best_v = 10000
     best_k = 0
     for k, v in value.items():
@@ -286,12 +297,12 @@ def find_best_k(train_x, train_y, dist_function):
     return best_k
 
 
-def is_productive(x, train_x, train_y, dist_function, k):
+def is_productive(x, train_x, train_y, dist_function, w, k):
     if len(train_x) != len(train_y):
         return
 
     true_productive = 0
-    distance = k_nearest_neighbors(x, train_x, dist_function, k)
+    distance = k_nearest_neighbors(x, train_x, dist_function, w, k)
 
     for i in range(len(distance)):
         if train_y[distance[i]]:
@@ -305,11 +316,11 @@ def is_productive(x, train_x, train_y, dist_function, k):
         return ratio > 0.5
 
 
-def eval_produtivity_classifier(train_x, train_y, test_x, test_y, classifier, dist_function, k):
+def eval_produtivity_classifier(train_x, train_y, test_x, test_y, classifier, dist_function, w, k):
     false_detection = 0.0
 
     for point in range(len(test_x)):
-        v = classifier(test_x[point], train_x, train_y, dist_function, k)
+        v = classifier(test_x[point], train_x, train_y, dist_function, w, k)
         if v != test_y[point]:
             false_detection += 1.0
     return false_detection / float(len(test_x))
@@ -321,7 +332,7 @@ def eval_produtivity(train_x, train_y, test_x, test_y, classifier, dist_function
     trueProd = 0.0
 
     for point in range(len(test_x)):
-        v = classifier(test_x[point], train_x, train_y, dist_function, k)
+        v = classifier(test_x[point], train_x, train_y, dist_function, w, k)
         if not v and not test_y[point]:
             continue
         if not v and test_y[point]:
@@ -347,13 +358,14 @@ if __name__ == '__main__':
     Xtrain, Ytrain = read_data('train')
     Xtest, Ytest = read_data('test')
 
-    print productivity_eval(Xtrain, Ytrain, Xtest, Ytest)
+    r, p, w = productivity_eval(Xtrain, Ytrain, Xtest, Ytest)
+    print r, p
 
     Xtrain, Ytrain = read_data_knn('train')
     Xtest, Ytest = read_data_knn('test')
 
-    j = 100
+    j = 1000
 
-    k = find_best_k(Xtrain[:j], Ytrain[:j], simple_distance)
+    k = find_best_k(Xtrain[:j], Ytrain[:j], distant_with_weight, w)
     print eval_produtivity(Xtrain[:j], Ytrain[:j], Xtest[:100], Ytest[:100], is_productive,
-                           simple_distance, k)
+                           distant_with_weight, k)
