@@ -61,7 +61,7 @@ def split_lines(input_file, seed, output1, output2):
         f2.write(j)
     f1.close()
     f2.close()
-    print 'corrupted line '
+    print 'How many corrupted lines ?'
     print corrupted
 
 
@@ -115,10 +115,7 @@ def read_data(filename):
         else:
             Y.append(0)
 
-    print 'post processed line '
-    print post_processed
-
-    return X, Y
+    return X, Y, post_processed
 
 
 def read_data_knn(filename):
@@ -174,8 +171,8 @@ def read_data_knn(filename):
     return X, Y
 
 
-def productivity_eval(train_x, train_y, test_x, test_y):
-    model = LogisticRegression()
+def logisticRegression_eval(train_x, train_y, test_x, test_y):
+    model = LogisticRegression(solver='liblinear')
     model.fit(train_x, train_y)
     isProd = 0.
     totalProd = 0.
@@ -278,12 +275,12 @@ def find_best_k(train_x, train_y, dist_function, w):
         y_train, y_test = numpy.array(train_y)[train_index], numpy.array(train_y)[test_index]
         for i in range(len(k_value)):
             if k_value[i] in value:
-                value[k_value[i]] += eval_produtivity_classifier(numpy.asfarray(X_train), y_train,
+                value[k_value[i]] += eval_classifier(numpy.asfarray(X_train), y_train,
                                                                  numpy.asfarray(X_test), y_test,
                                                                  is_productive,
                                                                  dist_function, w, k_value[i])
             else:
-                value[k_value[i]] = eval_produtivity_classifier(numpy.asfarray(X_train), y_train,
+                value[k_value[i]] = eval_classifier(numpy.asfarray(X_train), y_train,
                                                                 numpy.asfarray(X_test), y_test,
                                                                 is_productive,
                                                                 dist_function, w, k_value[i])
@@ -316,7 +313,7 @@ def is_productive(x, train_x, train_y, dist_function, w, k):
         return ratio > 0.5
 
 
-def eval_produtivity_classifier(train_x, train_y, test_x, test_y, classifier, dist_function, w, k):
+def eval_classifier(train_x, train_y, test_x, test_y, classifier, dist_function, w, k):
     false_detection = 0.0
 
     for point in range(len(test_x)):
@@ -326,7 +323,7 @@ def eval_produtivity_classifier(train_x, train_y, test_x, test_y, classifier, di
     return false_detection / float(len(test_x))
 
 
-def eval_produtivity(train_x, train_y, test_x, test_y, classifier, dist_function, k):
+def eval_knn(train_x, train_y, test_x, test_y, classifier, dist_function, k):
     isProd = 0.0
     totalProd = 0.0
     trueProd = 0.0
@@ -355,10 +352,12 @@ def eval_produtivity(train_x, train_y, test_x, test_y, classifier, dist_function
 
 if __name__ == '__main__':
     split_lines('dataset.csv', 2, 'train', 'test')
-    Xtrain, Ytrain = read_data('train')
-    Xtest, Ytest = read_data('test')
+    Xtrain, Ytrain, p1 = read_data('train')
+    Xtest, Ytest, p2 = read_data('test')
+    print 'How many post processed lines in dataset.csv ?'
+    print p1+p2
 
-    r, p, w = productivity_eval(Xtrain, Ytrain, Xtest, Ytest)
+    r, p, w = logisticRegression_eval(Xtrain, Ytrain, Xtest, Ytest)
     print r, p
 
     Xtrain, Ytrain = read_data_knn('train')
@@ -367,9 +366,6 @@ if __name__ == '__main__':
     j = 500
     k = 10
 
-    k_value = sampled_range(1, len(Xtrain) / 10, 20)
-
-#    k = find_best_k(Xtrain[:j], Ytrain[:j], distant_with_weight, w)
-    for val in k_value:
-        print eval_produtivity(Xtrain, Ytrain, Xtest[:100], Ytest[:100], is_productive,
-                           distant_with_weight, val)
+    #k = find_best_k(Xtrain[:j], Ytrain[:j], distant_with_weight, w)
+    print eval_knn(Xtrain, Ytrain, Xtest[:100], Ytest[:100], is_productive,
+                           distant_with_weight, 49)
